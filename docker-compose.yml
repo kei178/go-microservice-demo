@@ -1,0 +1,8 @@
+version: '3.1'
+services:
+  kinesis:
+    image: vsouza/kinesis-local:latest
+    command: --port 4567
+    restart: always
+    ports:
+      - 4567:4567
