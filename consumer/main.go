@@ -45,7 +45,7 @@ func main() {
 	var consumer_opts = consumer.WithClient(client)
 	c, err := consumer.New(*stream, consumer_opts)
 	if err != nil {
-		log.Fatalf("consumber error: %v", err)
+		log.Fatalf("consumer error: %v", err)
 	}
 
 	// start scan
