@@ -19,7 +19,7 @@ import (
 func main() {
 	var (
 		streamName      = flag.String("stream", "", "Stream name")
-		kinesisEndpoint = flag.String("endpoint", "http://localhost:4567", "Kinesis endpoint")
+		kinesisEndpoint = flag.String("endpoint", "http://0.0.0.0:4567", "Kinesis endpoint")
 		awsRegion       = flag.String("region", "us-west-2", "AWS Region")
 	)
 	flag.Parse()
