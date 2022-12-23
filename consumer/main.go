@@ -5,17 +5,17 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/kinesis"
-	consumer "github.com/harlow/kinesis-consumer"
 )
 
 func main() {
 	var (
-		stream          = flag.String("stream", "", "Stream name")
+		streamName      = flag.String("stream", "", "Stream name")
 		kinesisEndpoint = flag.String("endpoint", "http://localhost:4567", "Kinesis endpoint")
 		awsRegion       = flag.String("region", "us-west-2", "AWS Region")
 	)
@@ -39,22 +39,41 @@ func main() {
 	if err != nil {
 		log.Fatalf("unable to load SDK config, %v", err)
 	}
-	var client = kinesis.NewFromConfig(cfg)
+	var kinesisClient = kinesis.NewFromConfig(cfg)
 
-	// consumer
-	var consumer_opts = consumer.WithClient(client)
-	c, err := consumer.New(*stream, consumer_opts)
+	// retrieve shard IDs
+	streams, err := kinesisClient.DescribeStream(context.TODO(), &kinesis.DescribeStreamInput{StreamName: streamName})
 	if err != nil {
-		log.Fatalf("consumer error: %v", err)
+		log.Fatalf("failed to fetch shard IDs: %v", err)
 	}
 
-	// start scan
-	fmt.Println("start scanning...")
-	err = c.Scan(context.TODO(), func(r *consumer.Record) error {
-		fmt.Println(string(r.Data))
-		return nil // continue scanning
+	// retrieve shard iterators
+	iteratorOutput, err := kinesisClient.GetShardIterator(context.TODO(), &kinesis.GetShardIteratorInput{
+		ShardId:           aws.String(*streams.StreamDescription.Shards[0].ShardId),
+		ShardIteratorType: "TRIM_HORIZON",
+		StreamName:        streamName,
 	})
 	if err != nil {
-		log.Fatalf("scan error: %v", err)
+		log.Fatalf("failed to fetch shard iterators: %v", err)
+	}
+	shardIterator := iteratorOutput.ShardIterator
+
+	// attempt to consume data every 1 sec
+	for {
+		fmt.Println("-- keep scanning...")
+		records, err := kinesisClient.GetRecords(context.TODO(), &kinesis.GetRecordsInput{
+			ShardIterator: shardIterator,
+		})
+		if err != nil {
+			time.Sleep(1000 * time.Millisecond)
+			continue
+		}
+
+		// process the data
+		if len(records.Records) > 0 {
+			log.Printf("GetRecords Data: %v\n", records.Records[0].Data)
+		}
+		shardIterator = records.NextShardIterator
+		time.Sleep(1000 * time.Millisecond)
 	}
 }
