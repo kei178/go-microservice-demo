@@ -29,7 +29,6 @@ func main() {
 		}, nil
 	})
 
-	// client
 	cfg, err := config.LoadDefaultConfig(
 		context.TODO(),
 		config.WithRegion(*awsRegion),
@@ -58,22 +57,34 @@ func main() {
 	}
 	shardIterator := iteratorOutput.ShardIterator
 
-	// attempt to consume data every 1 sec
+	// attempt to consume data with a 1-sec interval
+	var interval = 1000 * time.Millisecond
 	for {
 		fmt.Println("-- keep scanning...")
-		records, err := kinesisClient.GetRecords(context.TODO(), &kinesis.GetRecordsInput{
+		resp, err := kinesisClient.GetRecords(context.TODO(), &kinesis.GetRecordsInput{
 			ShardIterator: shardIterator,
 		})
 		if err != nil {
-			time.Sleep(1000 * time.Millisecond)
+			time.Sleep(interval)
 			continue
 		}
 
 		// process the data
-		if len(records.Records) > 0 {
-			log.Printf("GetRecords Data: %v\n", records.Records[0].Data)
+		if len(resp.Records) > 0 {
+			for _, r := range resp.Records {
+				log.Printf("GetRecords Data: %v\n", string(r.Data))
+
+				// TODO: `r.Data` seems not passed line by line of the producer text
+				// var result map[string]interface{}
+				// err := json.Unmarshal([]byte(r.Data), &result)
+				// if err != nil {
+				// 	log.Println(err)
+				// 	continue
+				// }
+				// log.Printf("GetRecords Data: %v\n", result)
+			}
 		}
-		shardIterator = records.NextShardIterator
-		time.Sleep(1000 * time.Millisecond)
+		shardIterator = resp.NextShardIterator
+		time.Sleep(interval)
 	}
 }
