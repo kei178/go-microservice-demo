@@ -31,6 +31,13 @@ docker-compose up -d
 
 Source: https://docs.aws.amazon.com/cli/latest/reference/kinesis/index.html
 
+Create a stream:
+
+```
+AWS_ACCESS_KEY_ID=x AWS_SECRET_ACCESS_KEY=x aws --endpoint-url http://localhost:4567/ kinesis create-stream --stream-name mystream --shard-count 1
+```
+
+
 Get a list of streams:
 
 ```

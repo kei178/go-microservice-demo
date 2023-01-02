@@ -86,7 +86,7 @@ func createStream(client *kinesis.Client, streamName string) error {
 		context.Background(),
 		&kinesis.CreateStreamInput{
 			StreamName: aws.String(streamName),
-			ShardCount: aws.Int32(2),
+			ShardCount: aws.Int32(1),
 		},
 	)
 	if err != nil {

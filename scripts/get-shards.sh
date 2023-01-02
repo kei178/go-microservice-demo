@@ -22,7 +22,7 @@ STREAM_NAME=$1
 # TRIM HORIZON is for starting at the begining of the Kinesis Stream.
 # This can take a while if you have a lot of records.
 # To use TRIM HORIZON, uncomment the following line:
-# TYPE=TRIM_HORIZON
+TYPE=TRIM_HORIZON
 
 # AT_TIMESTAMP allows you to go back to a point in time. This is set for going back one hour
 # To use AT_TIMESTAMP, uncomment the following two lines:
@@ -30,7 +30,7 @@ STREAM_NAME=$1
 # TYPE="AT_TIMESTAMP --timestamp $TIMESTAMP"
 
 # LATEST means start at the most current point in the stream and read forward
-TYPE=TRIM_HORIZON
+# TYPE=LATEST
 
 echo "-- Fetching SHARD_IDS"
 

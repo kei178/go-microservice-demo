@@ -24,6 +24,14 @@ type UserPayload struct {
 	Lastname  string `json:"lastname"`
 }
 
+const (
+	dbhost     = "localhost"
+	dbport     = 5555
+	dbuser     = "root"
+	dbpassword = "password"
+	dbname     = "testdb"
+)
+
 func main() {
 	var (
 		streamName      = flag.String("stream", "", "Stream name")
@@ -61,6 +69,7 @@ func main() {
 	}
 
 	// retrieve shard iterators
+	// TODO: Support multiple shards
 	iteratorOutput, err := kinesisClient.GetShardIterator(context.TODO(), &kinesis.GetShardIteratorInput{
 		ShardId:           aws.String(*streams.StreamDescription.Shards[0].ShardId),
 		ShardIteratorType: "TRIM_HORIZON",
@@ -105,14 +114,6 @@ func main() {
 		time.Sleep(interval)
 	}
 }
-
-const (
-	dbhost     = "localhost"
-	dbport     = 5555
-	dbuser     = "root"
-	dbpassword = "password"
-	dbname     = "testdb"
-)
 
 func connectToDB() *sql.DB {
 	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", dbhost, dbport, dbuser, dbpassword, dbname)

@@ -1,0 +1,1 @@
+{"userid":5001,"username":"MFG00JZZ","firstname":"Keisuke","lastname":"Inaba","city":"Springfield","state":"NS","email":"keisuke@example.com","phone":"(577) 784-3274","likesports":true,"liketheatre":true,"likeconcerts":false,"likejazz":false,"likeclassical":false,"likeopera":false,"likerock":true,"likevegas":false,"likebroadway":false,"likemusicals":false}
