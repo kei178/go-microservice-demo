@@ -76,3 +76,42 @@ Get a list of records from a stream with a `shard-iterator`:
 SHARD_ITERATOR=[shard-iterator]
 bash scripts/get-records.sh mystream $SHARD_ITERATOR
 ```
+
+## Postgres
+
+### Setup
+
+Run Postgres in your local:
+
+```
+docker-compose up -d
+```
+
+Access psql console:
+
+```
+docker exec -it go-microservice-demo_postgres_1 bash
+psql
+```
+
+Create a `testdb` database:
+
+```
+CREATE DATABASE testdb;
+```
+
+Create the `users` table:
+
+```
+CREATE TABLE users (
+	id serial PRIMARY KEY,
+	username VARCHAR ( 50 ) UNIQUE NOT NULL,
+	email VARCHAR ( 255 ) UNIQUE NOT NULL,
+	fullname VARCHAR ( 255 ) NOT NULL,
+	created_on TIMESTAMP NOT NULL
+);
+```
+
+### pgweb
+
+You can access Postgres via pgweb at  `http://localhost:8088/`.

@@ -6,3 +6,24 @@ services:
     restart: always
     ports:
       - 4567:4567
+  postgres:
+    image: postgres
+    ports:
+      - 5555:5432
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=password
+    tty: true
+    restart: always
+    user: root
+  pgweb:
+    image: sosedoff/pgweb
+    ports: 
+      - "8088:8081"
+    environment:
+      - PGWEB_DATABASE_URL=postgres://root:password@postgres:5432/testdb?sslmode=disable
+    links: 
+      - postgres:postgres
+    restart: always
+    depends_on:
+      - postgres
