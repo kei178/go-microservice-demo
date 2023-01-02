@@ -39,7 +39,7 @@ AWS_ACCESS_KEY_ID=x AWS_SECRET_ACCESS_KEY=x aws --endpoint-url http://localhost:
 Get a `shard-iterator` from a stream:
 
 ```
-AWS_ACCESS_KEY_ID=x AWS_SECRET_ACCESS_KEY=x aws --endpoint-url http://localhost:4567/ kinesis get-shard-iterator --shard-id [shard-id] --shard-iterator-type TRIM_HORIZON --stream-name mystream --query 'ShardIterator'
+AWS_ACCESS_KEY_ID=x AWS_SECRET_ACCESS_KEY=x aws --endpoint-url http://localhost:4567/ kinesis get-shard-iterator --shard-id shardId-000000000000 --shard-iterator-type TRIM_HORIZON --stream-name mystream --query 'ShardIterator'
 ```
 
 Get records with a `shard-iterator`:
@@ -52,4 +52,19 @@ Get the decoded first record from a `shard-iterator`:
 
 ```
 AWS_ACCESS_KEY_ID=x AWS_SECRET_ACCESS_KEY=x aws --endpoint-url http://localhost:4567/ kinesis get-records --shard-iterator [shard-iterator] | jq -r '.Records[0].Data' | base64 --decode
+```
+
+### Scripts
+
+Get a list of `shard-id` and `shard-iterator` from a stream:
+
+```
+bash scripts/get-shards.sh mystream
+```
+
+Get a list of records from a stream with a `shard-iterator`:
+
+```
+SHARD_ITERATOR=[shard-iterator]
+bash scripts/get-records.sh mystream $SHARD_ITERATOR
 ```
