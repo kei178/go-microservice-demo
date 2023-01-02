@@ -1,5 +1,13 @@
 # go-microservice-demo
 
+## Consumer
+
+Cosume data from the stream:
+
+```
+go run consumer/main.go --stream mystream
+```
+
 
 ## Producer
 

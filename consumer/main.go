@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"log"
@@ -57,10 +58,10 @@ func main() {
 	}
 	shardIterator := iteratorOutput.ShardIterator
 
-	// attempt to consume data with a 1-sec interval
-	var interval = 1000 * time.Millisecond
+	// attempt to consume data with a 2-sec interval
+	var interval = 2000 * time.Millisecond
 	for {
-		fmt.Println("-- keep scanning...")
+		fmt.Println("Keep scanning...")
 		resp, err := kinesisClient.GetRecords(context.TODO(), &kinesis.GetRecordsInput{
 			ShardIterator: shardIterator,
 		})
@@ -72,16 +73,14 @@ func main() {
 		// process the data
 		if len(resp.Records) > 0 {
 			for _, r := range resp.Records {
-				log.Printf("GetRecords Data: %v\n", string(r.Data))
-
-				// TODO: `r.Data` seems not passed line by line of the producer text
-				// var result map[string]interface{}
-				// err := json.Unmarshal([]byte(r.Data), &result)
-				// if err != nil {
-				// 	log.Println(err)
-				// 	continue
-				// }
-				// log.Printf("GetRecords Data: %v\n", result)
+				var result map[string]interface{}
+				err := json.Unmarshal([]byte(r.Data), &result)
+				if err != nil {
+					log.Println(err)
+					continue
+				}
+				log.Printf("GetRecords Data: %v\n", result)
+				fmt.Println("---")
 			}
 		}
 		shardIterator = resp.NextShardIterator
