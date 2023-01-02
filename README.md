@@ -108,7 +108,7 @@ CREATE TABLE users (
 	username VARCHAR ( 50 ) UNIQUE NOT NULL,
 	email VARCHAR ( 255 ) UNIQUE NOT NULL,
 	fullname VARCHAR ( 255 ) NOT NULL,
-	created_on TIMESTAMP NOT NULL
+	created_at TIMESTAMP NOT NULL
 );
 ```
 

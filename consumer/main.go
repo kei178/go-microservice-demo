@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -12,7 +13,16 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/kinesis"
+
+	_ "github.com/lib/pq"
 )
+
+type UserPayload struct {
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+	Firstname string `json:"firstname"`
+	Lastname  string `json:"lastname"`
+}
 
 func main() {
 	var (
@@ -21,6 +31,9 @@ func main() {
 		awsRegion       = flag.String("region", "us-west-2", "AWS Region")
 	)
 	flag.Parse()
+
+	db := connectToDB()
+	defer db.Close()
 
 	resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
 		return aws.Endpoint{
@@ -73,17 +86,60 @@ func main() {
 		// process the data
 		if len(resp.Records) > 0 {
 			for _, r := range resp.Records {
-				var result map[string]interface{}
-				err := json.Unmarshal([]byte(r.Data), &result)
+				var payload UserPayload
+				err := json.Unmarshal([]byte(r.Data), &payload)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
-				log.Printf("GetRecords Data: %v\n", result)
+				log.Printf("GetRecords Data: %v\n", payload)
 				fmt.Println("---")
+
+				err = insertUser(db, payload)
+				if err != nil {
+					fmt.Printf("failed to save user payload: %v", err)
+				}
 			}
 		}
 		shardIterator = resp.NextShardIterator
 		time.Sleep(interval)
 	}
+}
+
+const (
+	dbhost     = "localhost"
+	dbport     = 5555
+	dbuser     = "root"
+	dbpassword = "password"
+	dbname     = "testdb"
+)
+
+func connectToDB() *sql.DB {
+	psqlconn := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable", dbhost, dbport, dbuser, dbpassword, dbname)
+
+	// open database
+	db, err := sql.Open("postgres", psqlconn)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	// check db
+	err = db.Ping()
+	if err != nil {
+		log.Panic(err)
+	}
+
+	fmt.Println("Connected to Postgres!")
+	return db
+}
+
+func insertUser(db *sql.DB, payload UserPayload) error {
+	_, err := db.Exec(
+		`INSERT INTO users ("username", "email", "fullname", "created_at") VALUES ($1, $2, $3, $4)`,
+		payload.Username,
+		payload.Email,
+		payload.Firstname+" "+payload.Lastname,
+		time.Now(),
+	)
+	return err
 }

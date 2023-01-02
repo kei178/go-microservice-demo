@@ -21,5 +21,6 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/harlow/kinesis-consumer v0.3.6-0.20211204214318-c2b9f79d7ab6 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/lib/pq v1.10.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 )
