@@ -55,7 +55,7 @@ func main() {
 
 	for b.Scan() {
 		records = append(records, types.PutRecordsRequestEntry{
-			Data:         b.Bytes(),
+			Data:         []byte(b.Text()),
 			PartitionKey: aws.String(time.Now().Format(time.RFC3339Nano)),
 		})
 
