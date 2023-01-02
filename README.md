@@ -27,6 +27,13 @@ Run [Kinesis Lite](https://github.com/mhart/kinesalite) in your local:
 docker-compose up -d
 ```
 
+Restart the kinesis container:
+
+```
+docker-compose restart kinesis
+```
+
+
 ### Useful Commands
 
 Source: https://docs.aws.amazon.com/cli/latest/reference/kinesis/index.html
