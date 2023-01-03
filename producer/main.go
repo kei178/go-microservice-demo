@@ -24,8 +24,6 @@ func main() {
 	)
 	flag.Parse()
 
-	var records []types.PutRecordsRequestEntry
-
 	resolver := aws.EndpointResolverFunc(func(service, region string) (aws.Endpoint, error) {
 		return aws.Endpoint{
 			PartitionID:   "aws",
@@ -51,6 +49,7 @@ func main() {
 	}
 
 	// loop over file data
+	var records []types.PutRecordsRequestEntry
 	b := bufio.NewScanner(os.Stdin)
 
 	for b.Scan() {

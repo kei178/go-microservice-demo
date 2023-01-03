@@ -25,11 +25,12 @@ type UserPayload struct {
 }
 
 const (
-	dbhost     = "localhost"
-	dbport     = 5555
-	dbuser     = "root"
-	dbpassword = "password"
-	dbname     = "testdb"
+	dbhost           = "localhost"
+	dbport           = 5555
+	dbuser           = "root"
+	dbpassword       = "password"
+	dbname           = "testdb"
+	concurrent_count = 10
 )
 
 func main() {
@@ -83,7 +84,6 @@ func main() {
 	// attempt to consume data with a 2-sec interval
 	var interval = 2000 * time.Millisecond
 	for {
-		fmt.Println("Scanning Kinesis")
 		resp, err := kinesisClient.GetRecords(context.TODO(), &kinesis.GetRecordsInput{
 			ShardIterator: shardIterator,
 		})
@@ -93,24 +93,41 @@ func main() {
 		}
 
 		// process the data
+		var payload_groups [concurrent_count][]UserPayload
 		if len(resp.Records) > 0 {
-			for _, r := range resp.Records {
+			for i, r := range resp.Records {
 				var payload UserPayload
 				err := json.Unmarshal([]byte(r.Data), &payload)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
-				err = insertUser(db, payload)
-				if err != nil {
-					fmt.Printf("%s - failed to save user payload: %v\n", payload, err)
-				} else {
-					fmt.Print(".")
-				}
+				n := (i + 1) % concurrent_count
+				payload_groups[n] = append(payload_groups[n], payload)
 			}
+		}
+
+		// insert users into DB
+		channel := make(chan string)
+		for _, payloads := range payload_groups {
+			go func(payloads []UserPayload) {
+				for _, payload := range payloads {
+					err = insertUser(db, payload)
+					if err != nil {
+						fmt.Printf("%s - failed to save user payload: %v\n", payload, err)
+					} else {
+						fmt.Print(".")
+					}
+				}
+				channel <- ""
+			}(payloads)
+		}
+		for i := 0; i < concurrent_count; i++ {
+			fmt.Print(<-channel)
 		}
 		shardIterator = resp.NextShardIterator
 		time.Sleep(interval)
+		fmt.Printf("\nKeep scanning Kinesis")
 	}
 }
 
