@@ -83,7 +83,7 @@ func main() {
 	// attempt to consume data with a 2-sec interval
 	var interval = 2000 * time.Millisecond
 	for {
-		fmt.Println("Keep scanning...")
+		fmt.Println("Scanning Kinesis")
 		resp, err := kinesisClient.GetRecords(context.TODO(), &kinesis.GetRecordsInput{
 			ShardIterator: shardIterator,
 		})
@@ -101,12 +101,11 @@ func main() {
 					log.Println(err)
 					continue
 				}
-				log.Printf("GetRecords Data: %v\n", payload)
-				fmt.Println("---")
-
 				err = insertUser(db, payload)
 				if err != nil {
-					fmt.Printf("failed to save user payload: %v", err)
+					fmt.Printf("%s - failed to save user payload: %v\n", payload, err)
+				} else {
+					fmt.Print(".")
 				}
 			}
 		}
