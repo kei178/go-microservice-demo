@@ -1,5 +1,7 @@
 # go-microservice-demo
 
+![go-microservice-demo diagram](go-microservice-demo-diagram.jpeg)
+
 ## Consumer
 
 Cosume data from the stream:
